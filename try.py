@@ -43,7 +43,7 @@ def Init():
     # cell stores the coordinates of the upper left corner of all cells
     status = [11 for i in range(N + 1)]
     # i-th cell have been clicked
-    # 0~8: number 0 to 8 ,9: mine, 10: flag ,11: initial
+    # 0~8: number 0 to 8 ,9: flag, 10: initial
     judgment = [11 for i in range(N + 1)]
     # we can kown what is i-th cell
     for i in range(1, N + 1):
