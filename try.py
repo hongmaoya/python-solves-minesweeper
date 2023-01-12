@@ -37,13 +37,13 @@ def main():
         print(i, x, y)
         if (x == 1):
             cell[i][1] = top + UPPER
-            if(y == 1):
+            if (y == 1):
                 cell[i][0] = left + LEFT
             else:
                 cell[i][0] = cell[i - 1][0] + CELLY
         else:
             cell[i][1] = cell[i - NY][1] + CELLX
-            if(y == 1):
+            if (y == 1):
                 cell[i][0] = left + LEFT
             else:
                 cell[i][0] = cell[i - 1][0] + CELLY
