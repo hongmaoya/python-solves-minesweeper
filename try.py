@@ -10,43 +10,38 @@ OFFSET = 10  # a offset of the coordinates
 MINE, FLAG, INITIAL = 9, 10, 11
 
 
-# numbering start from one
-def GetId(x, y):
-    return (x - 1) * NY + y
-# x-axis direction: top to bottom
-# y-axis direction: left to right
-
-
-def GetXY(id):
-    return (id - 1) // NY + 1, (id - 1) % NY + 1
-
-
 def GetLocation():
     # difficulty = pya.confirm('select the difficulty', buttons=['Beginner', 'Intermediate', 'Expert'])
     difficulty = 'Expert'
-    difficulty_fig = './Arbiter/difficulty/' + difficulty + '.png'
-    location = pya.locateOnScreen(difficulty_fig)
+    difficulty_path = './Arbiter/difficulty/' + difficulty + '.png'
+    location = pya.locateOnScreen(difficulty_path)
     print('{:.^30}'.format('Finding'))
     while location == None:
         res = pya.locateOnScreen('./Arbiter/nodie.png')
         if res != None:
             pya.leftClick(res[0] + OFFSET, res[1] + OFFSET)
-        location = pya.locateOnScreen(difficulty_fig)
+        location = pya.locateOnScreen(difficulty_path)
     print('{:.^30}'.format('\'location\' ready'))
     global left, top, Szx, Szy
     left, top, Szy, Szx = location[0], location[1], location[2], location[3]
 
 
+# cellx, celly = [0], [0]
+cellx = [0, 461, 485, 509, 533, 557, 581, 605,
+         629, 653, 677, 701, 725, 749, 773, 797, 821]
+celly = [0, 1810, 1834, 1858, 1882, 1906, 1930, 1954, 1978, 2002, 2026, 2050, 2074, 2098, 2122,
+         2146, 2170, 2194, 2218, 2242, 2266, 2290, 2314, 2338, 2362, 2386, 2410, 2434, 2458, 2482, 2506]
+cell = [[0, 0] for i in range(N + 1)]
+# cell stores the coordinates of the upper left corner of all cells
+status = [10 for i in range(N + 1)]
+# i-th cell have been clicked
+# 0~8: number 0 to 8 ,9: flag, 10: initial
+judgment = [10 for i in range(N + 1)]
+# we can kown what is i-th cell
+# 10: unkown, 9: mine
+
+
 def Init():
-    global cell, status, judgment, cellx, celly
-    cell = [[0, 0] for i in range(N + 1)]
-    # cell stores the coordinates of the upper left corner of all cells
-    status = [10 for i in range(N + 1)]
-    # i-th cell have been clicked
-    # 0~8: number 0 to 8 ,9: flag, 10: initial
-    judgment = [10 for i in range(N + 1)]
-    # we can kown what is i-th cell
-    # 10: unkown, 9: mine
     for i in range(1, N + 1):
         x, y = GetXY(i)
         if (x == 1):
@@ -61,12 +56,23 @@ def Init():
                 cell[i][0] = left + LEFT
             else:
                 cell[i][0] = cell[i - 1][0] + CELLY
-    cellx, celly = [0], [0]
     for i in range(1, NX + 1):
         cellx.append(cell[GetId(i, 1)][1])
     for i in range(1, NY + 1):
         celly.append(cell[GetId(1, i)][0])
     print('{:.^30}'.format('\'cell\' ready'))
+
+# numbering start from one
+
+
+def GetId(x, y):
+    return (x - 1) * NY + y
+# x-axis direction: top to bottom
+# y-axis direction: left to right
+
+
+def GetXY(id):
+    return (id - 1) // NY + 1, (id - 1) % NY + 1
 
 
 def IsDead():
@@ -117,8 +123,13 @@ def LocationCell(lef, op):
 
 
 def Now():
+    for i in range(1, 10):
+        path = './Arbiter/' + str(i) + '.png'
+        position = pya.locateAllOnScreen(path, confidence=0.99, region = (left, top, Szy, Szx))
+        for posi in position:
+            a, b = LocationCell(posi[0], posi[1])
+            status[GetId(a, b)] = i
     print('{:.^30}'.format('\'Now\' ready'))
-    pass
 
 
 def Solve():
@@ -126,19 +137,10 @@ def Solve():
 
 
 def test():
-    global cellx, celly
-    cellx = [0, 526, 550, 574, 598, 622, 646, 670, 694, 718, 742, 766, 790, 814, 838, 862, 886]
-    celly = [0, 1808, 1832, 1856, 1880, 1904, 1928, 1952, 1976, 2000, 2024, 2048, 2072, 2096, 2120, 2144, 2168, 2192, 2216, 2240, 2264, 2288, 2312, 2336, 2360, 2384, 2408, 2432, 2456, 2480, 2504]
-    print('in test')
-    # time.sleep(2)
-    # print('end sleep')
-    test = pya.locateAllOnScreen('./Arbiter/9.png', confidence=0.99)
-    cnt = 0
-    for i in test:
-        cnt += 1
-        print(i[0],i[1])
-        print(LocationCell(i[0], i[1]))
-    print(cnt)
+    for i in range(1, NX + 1):
+        for j in range(1, NY + 1):
+            print('{:^2}'.format(status[GetId(i, j)]), end=' ')
+        print()
     pass
 
 
@@ -147,8 +149,10 @@ def main():
     #     Restart()
     # GetLocation()
     # Init()
+    global left, top, Szy, Szx 
+    left, top, Szy, Szx = 1805, 456, 729, 393
+    Now()
     test()
-    # Now()
     # Solve()
     pass
 
