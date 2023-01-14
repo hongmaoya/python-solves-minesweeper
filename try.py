@@ -26,7 +26,6 @@ def GetLocation():
     print('{:.^30}'.format('\'location\' ready'))
     global left, top, Szx, Szy
     left, top, Szy, Szx = location[0], location[1], location[2], location[3]
-    print(location)
 
 
 cnt = 0
@@ -62,8 +61,6 @@ def Init():
     for i in range(1, NY + 1):
         celly.append(cell[GetId(1, i)][0])
     print('{:.^30}'.format('\'cell\' ready'))
-    print(cellx)
-    print(celly)
 
 # numbering start from one
 
@@ -93,6 +90,8 @@ def ClickLeft(id):
 
 
 def ClickRight(id):
+    global sign
+    sign = 0
     pya.rightClick(cell[id][0] + OFFSET, cell[id][1] + OFFSET, _pause=False)
     status[id] = FLAG
     global cnt
@@ -102,6 +101,8 @@ def ClickRight(id):
 
 
 def ClickMid(id):
+    global sign
+    sign = 0
     pya.middleClick(cell[id][0] + OFFSET, cell[id][1] + OFFSET, _pause=False)
     if id in judgment:
         judgment.remove(id)
@@ -109,11 +110,10 @@ def ClickMid(id):
 
 def ClickRandom():
     while True:
-        index = random.randint(1, 480 + 1)
-        if index in judgment:
-            if status[index] == 10:
-                ClickLeft(index)
-                return
+        id = random.randint(1, len(judgment))
+        if status[judgment[id]] == 10:
+            ClickLeft(id)
+            return
 
 
 def Restart():
@@ -166,12 +166,12 @@ def GetAround(id):
                 continue
             if status[GetId(xx, yy)] > 8:
                 Around.append(GetId(xx, yy))
-    mines, blank = 0, 0
+    mines, blank = [], []
     for i in Around:
         if status[i] == 9:
-            mines += 1
+            mines.append(i)
         else:
-            blank += 1
+            blank.append(i)
     return Around, mines, blank
 
 
@@ -180,6 +180,7 @@ def Solve1():
         if status[i] < 9:
             if i in judgment:
                 Around, mines, blank = GetAround(i)
+                mines, blank = len(mines), len(blank)
                 if mines + blank == status[i]:
                     for j in Around:
                         if status[j] != FLAG:
@@ -188,17 +189,53 @@ def Solve1():
                     ClickMid(i)
 
 
+def Getudlr(id):
+    x, y = GetXY(id)
+    FX = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+    udlr = []
+    for fx, fy in FX:
+        xx, yy = x + fx, y + fy
+        if xx < 0 or yy < 0 or xx > NX or yy > NY:
+            continue
+        iid = GetId(x, y)
+        if status[iid] > 0 and status[iid] < 9:
+            udlr.append(iid)
+    return udlr
+
+
 def Solve2():
-    pass
+    for i in range(1, N + 1):
+        if status[i] < 9:
+            if i in judgment:
+                minesi, blanksi = GetAround(i)[1::]
+                if len(blanksi) > 0:
+                    udlr = Getudlr(i)
+                    for j in udlr:
+                        minesj, blanksj = GetAround(j)[1::]
+                        flag = 1
+                        for elem in blanksi:
+                            if elem not in blanksj:
+                                flag = 0
+                                break
+                        if flag:
+                            if status[j] - len(minesj) == status[i] - len(minesi):
+                                for elem in blanksj:
+                                    if elem not in blanksi:
+                                        ClickLeft(elem)
+                            elif (status[j] - len(minesj) - status[i] - len(minesi)) >= (len(blanksj) - len(blanksi)):
+                                for elem in blanksj:
+                                    if elem not in blanksi:
+                                        ClickRight(elem)
 
 
 # we can find that all the formalized series of moves(定式) can be launched by one or two cell
 # So we first achieve the reasoning for both cases
 def Solve():
-    tot = cnt
+    global sign
+    sign = 1
     Solve1()
     Solve2()
-    if tot == cnt:
+    if sign:
         ClickRandom()
 
 
