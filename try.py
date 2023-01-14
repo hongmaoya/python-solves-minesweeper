@@ -201,6 +201,8 @@ def Now():
 
 
 def GetAround(id):
+    if id not in judgment:
+        return
     x, y = GetXY(id)
     Around = []
     for xx in range(x - 1, x + 1 + 1):
@@ -220,19 +222,29 @@ def GetAround(id):
 
 def Solve1():
     for i in range(1, N + 1):
+        if status[i] == 0:
+            if i in judgment:
+                ClickMid(i)
         if status[i] < 9:
             if i in judgment:
                 Around, mines, blank = GetAround(i)
+                if Around == None:
+                    continue
                 mines, blank = len(mines), len(blank)
                 if mines + blank == status[i]:
                     for j in Around:
                         if status[j] != FLAG:
                             ClickRight(j)
-                if mines == status[i] and blank > 0:
-                    ClickMid(i)
+                if mines == status[i]:
+                    if blank > 0:
+                        ClickMid(i)
+                    else:
+                        judgment.remove(i)
 
 
 def Getudlr(id):
+    if id not in judgment:
+        return
     x, y = GetXY(id)
     FX = [(-1, 0), (1, 0), (0, -1), (0, 1)]
     udlr = []
@@ -251,10 +263,16 @@ def Solve2():
         if status[i] < 9:
             if i in judgment:
                 minesi, blanksi = GetAround(i)[1::]
+                if minesi == None:
+                    continue
                 if len(blanksi) > 0:
                     udlr = Getudlr(i)
+                    if udlr == None: 
+                        continue
                     for j in udlr:
                         minesj, blanksj = GetAround(j)[1::]
+                        if minesj == None:
+                            continue
                         flag = 1
                         for elem in blanksi:
                             if elem not in blanksj:
@@ -276,7 +294,7 @@ def Solve2():
 def Solve():
     global sign
     sign = 1
-    # Printf()
+    Printf()
     Solve1()
     Solve2()
     if sign:
