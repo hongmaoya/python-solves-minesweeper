@@ -7,9 +7,9 @@ NX, NY = 16, 30  # number of rows and columns
 N = NX * NY  # number of cell
 UPPER, LOWER, LEFT, RIGHT = 5, 4, 5, 4  # useless pixel
 CELLX, CELLY = 24, 24  # Length and width of each cell
-OFFSET = 10  # a offset of the coordinates
+OFFSET = 12  # a offset of the coordinates
 FLAG, INITIAL = 9, 10
-NUMBERMINES = 99
+NUMBERMINES = 50
 
 
 def GetLocation():
@@ -26,6 +26,7 @@ def GetLocation():
     print('{:.^30}'.format('\'location\' ready'))
     global left, top, Szx, Szy
     left, top, Szy, Szx = location[0], location[1], location[2], location[3]
+    # print(location)
 
 
 cnt = 0
@@ -61,6 +62,8 @@ def Init():
     for i in range(1, NY + 1):
         celly.append(cell[GetId(1, i)][0])
     print('{:.^30}'.format('\'cell\' ready'))
+    # print(cellx)
+    # print(celly)
 
 # numbering start from one
 
@@ -110,7 +113,10 @@ def ClickMid(id):
 
 def ClickRandom():
     while True:
-        id = random.randint(1, len(judgment))
+        id = random.randint(1, len(judgment) - 1)
+        print(judgment)
+        print(len(judgment))
+        print(id)
         if status[judgment[id]] == 10:
             ClickLeft(id)
             return
@@ -140,7 +146,8 @@ def LocationCell(lef, op):
     return lower_bound(cellx, op), lower_bound(celly, lef)
 
 
-def Now():
+def Now_():
+    t0 = time.time()
     pya.moveTo(10, 10)
     for i in range(1, 10):
         path = './Arbiter/' + str(i) + '.png'
@@ -154,7 +161,43 @@ def Now():
         if status[i] == 10:
             if loc.getpixel((cell[i][0], cell[i][1]))[0] < 200:
                 status[i] = 0
+    print(time.time() - t0)
     # print('{:.^30}'.format('\'Now\' ready'))
+
+
+def abs(x):
+    return x if x >= 0 else -x
+
+
+def Now():
+    # t0 = time.time()
+    loc = pya.screenshot()
+    col = [
+        [192, 192, 192], [0, 0, 255], [1, 128, 1], [255, 0, 0], [0, 0, 128],
+        [128, 0, 0], [12, 132, 132], [0, 0, 0], [131, 131, 131]
+    ]
+    for i in range(1, N + 1):
+        pix = loc.getpixel((cell[i][0] + OFFSET, cell[i][1] + OFFSET))
+        for color, j in enumerate(col):
+            if color == 0:
+                continue
+            flag = 1
+            if color == 7:
+                pix = loc.getpixel(
+                    (cell[i][0] + OFFSET + 10, cell[i][1] + 10))
+
+            for k in range(3):
+                if abs(pix[k] - j[k]) > 1:
+                    flag = 0
+                    break
+            if flag:
+                status[i] = color
+                break
+        if status[i] == 10:
+            if loc.getpixel((cell[i][0], cell[i][1]))[0] < 200:
+                status[i] = 0
+    # print(time.time() - t0)
+    pass
 
 
 def GetAround(id):
@@ -233,6 +276,7 @@ def Solve2():
 def Solve():
     global sign
     sign = 1
+    # Printf()
     Solve1()
     Solve2()
     if sign:
@@ -244,14 +288,18 @@ def Printf():
         for j in range(1, NY + 1):
             print('{:^2}'.format(status[GetId(i, j)]), end=' ')
         print()
+    print()
 
 
 def main():
-    # test()
     if IsDead():
         Restart()
     GetLocation()
     Init()
+    # for i in range(1, 16 + 1):
+    #     for j in range(1, 30 + 1):
+    #         print(cell[GetId(i, j)], end='')
+    #     print()
     ClickRandom()
     while True:
         Now()
@@ -262,7 +310,7 @@ def main():
                     ClickLeft(i)
             print('{:.^30}'.format('!!WIN!!'))
             exit()
-    pass
+    # pass
 
 
 if __name__ == '__main__':
