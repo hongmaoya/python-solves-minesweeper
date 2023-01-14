@@ -184,8 +184,8 @@ def Solve1():
                     for j in Around:
                         if status[j] != FLAG:
                             ClickRight(j)
-                if mines == status and blank > 0:
-                    ClickMid(j)
+                if mines == status[i] and blank > 0:
+                    ClickMid(i)
 
 
 def Solve2():
@@ -216,10 +216,6 @@ def main():
     GetLocation()
     Init()
     ClickRandom()
-    # for i in range(1, NX + 1):
-    #     for j in range(1, NY + 1):
-    #         print(cell[GetId(i, j)], end=' ')
-    #     print()
     while True:
         Now()
         Solve()
